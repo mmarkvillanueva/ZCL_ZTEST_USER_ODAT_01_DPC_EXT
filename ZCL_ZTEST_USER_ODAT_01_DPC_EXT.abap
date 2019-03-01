@@ -384,7 +384,7 @@ CLASS ZCL_ZTEST_USER_ODAT_01_DPC_EXT IMPLEMENTATION.
         IF lv_top IS NOT INITIAL OR lv_skip IS NOT INITIAL.
 
           DATA(lv_start) = lv_skip + 1.
-          DATA(lv_end) = lv_start + lv_top - 1.
+          DATA(lv_end) = lv_skip + lv_top.
           lv_rows = lines( lt_entityset ).
 
           IF lv_start LE lv_rows.
