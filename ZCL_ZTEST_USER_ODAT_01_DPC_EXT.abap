@@ -342,6 +342,7 @@ CLASS ZCL_ZTEST_USER_ODAT_01_DPC_EXT IMPLEMENTATION.
         CLEAR ls_selopt_zz_nickname.
     ENDTRY.
 
+    " So Cool!
     DATA(lt_order) = VALUE abap_sortorder_tab( FOR <fs_order> IN it_order (
       name = SWITCH #( <fs_order>-property
                 WHEN 'Nickname' THEN 'ZZ_NICKNAME' )
