@@ -1,25 +1,25 @@
-class ZCL_ZTEST_USER_ODAT_01_DPC_EXT definition
-  public
-  inheriting from ZCL_ZTEST_USER_ODAT_01_DPC
-  create public .
+CLASS zcl_ztest_user_odat_01_dpc_ext DEFINITION
+  PUBLIC
+  INHERITING FROM zcl_ztest_user_odat_01_dpc
+  CREATE PUBLIC .
 
-public section.
+  PUBLIC SECTION.
 
-  methods /IWBEP/IF_MGW_APPL_SRV_RUNTIME~CREATE_DEEP_ENTITY
-    redefinition .
-  methods /IWBEP/IF_MGW_APPL_SRV_RUNTIME~GET_EXPANDED_ENTITY
-    redefinition .
-  methods /IWBEP/IF_MGW_APPL_SRV_RUNTIME~GET_EXPANDED_ENTITYSET
-    redefinition .
-protected section.
+    METHODS /iwbep/if_mgw_appl_srv_runtime~create_deep_entity
+        REDEFINITION .
+    METHODS /iwbep/if_mgw_appl_srv_runtime~get_expanded_entity
+        REDEFINITION .
+    METHODS /iwbep/if_mgw_appl_srv_runtime~get_expanded_entityset
+        REDEFINITION .
+  PROTECTED SECTION.
 
-  methods USERSET_CREATE_ENTITY
-    redefinition .
-  methods USERSET_GET_ENTITY
-    redefinition .
-  methods USERSET_GET_ENTITYSET
-    redefinition .
-private section.
+    METHODS userset_create_entity
+        REDEFINITION .
+    METHODS userset_get_entity
+        REDEFINITION .
+    METHODS userset_get_entityset
+        REDEFINITION .
+  PRIVATE SECTION.
 ENDCLASS.
 
 
@@ -65,6 +65,8 @@ CLASS ZCL_ZTEST_USER_ODAT_01_DPC_EXT IMPLEMENTATION.
 
     DATA: lv_error TYPE abap_bool.
 
+    CLEAR er_deep_entity.
+
     CASE iv_entity_set_name.
 
       WHEN 'UserSet'.
@@ -81,7 +83,7 @@ CLASS ZCL_ZTEST_USER_ODAT_01_DPC_EXT IMPLEMENTATION.
           lt_ztest_contacts = CORRESPONDING #( ls_userset_deep-contactset ).
           ls_ztest_contacts-uname = ls_userset_deep-uname.
           MODIFY lt_ztest_contacts FROM ls_ztest_contacts TRANSPORTING uname
-            WHERE TABLE_LINE IS NOT INITIAL.
+            WHERE table_line IS NOT INITIAL.
 
           INSERT ztest_contacts FROM TABLE @lt_ztest_contacts.
           IF sy-subrc NE 0.
@@ -111,7 +113,7 @@ CLASS ZCL_ZTEST_USER_ODAT_01_DPC_EXT IMPLEMENTATION.
           RAISE EXCEPTION TYPE /iwbep/cx_mgw_busi_exception
             EXPORTING
               textid  = /iwbep/cx_mgw_busi_exception=>business_error
-              message = 'Error during creation of user'.
+              message = 'Error during creation of user' ##NO_TEXT.
 
         ENDIF.
 
@@ -143,6 +145,12 @@ CLASS ZCL_ZTEST_USER_ODAT_01_DPC_EXT IMPLEMENTATION.
         INCLUDE TYPE zcl_ztest_user_odat_02_mpc=>ts_user.
     DATA contactset TYPE zcl_ztest_user_odat_02_mpc=>tt_contact.
     DATA: END OF ls_user.
+
+    REFRESH: et_expanded_tech_clauses,
+             et_expanded_clauses.
+
+    CLEAR: er_entity,
+           es_response_context.
 
     TRY.
         DATA(lv_uname) = CONV ztest_user-uname( it_key_tab[ name = 'UserName' ]-value ).
@@ -210,30 +218,29 @@ CLASS ZCL_ZTEST_USER_ODAT_01_DPC_EXT IMPLEMENTATION.
 * | [!CX!] /IWBEP/CX_MGW_TECH_EXCEPTION
 * +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD /iwbep/if_mgw_appl_srv_runtime~get_expanded_entityset.
-**TRY.
-*CALL METHOD SUPER->/IWBEP/IF_MGW_APPL_SRV_RUNTIME~GET_EXPANDED_ENTITYSET
-**  EXPORTING
-**    iv_entity_name           =
-**    iv_entity_set_name       =
-**    iv_source_name           =
-**    it_filter_select_options =
-**    it_order                 =
-**    is_paging                =
-**    it_navigation_path       =
-**    it_key_tab               =
-**    iv_filter_string         =
-**    iv_search_string         =
-**    io_expand                =
-**    io_tech_request_context  =
-**  IMPORTING
-**    er_entityset             =
-**    et_expanded_clauses      =
-**    et_expanded_tech_clauses =
-**    es_response_context      =
-*    .
-** CATCH /iwbep/cx_mgw_busi_exception .
-** CATCH /iwbep/cx_mgw_tech_exception .
-**ENDTRY.
+    TRY.
+        super->/iwbep/if_mgw_appl_srv_runtime~get_expanded_entityset(
+          EXPORTING
+            iv_entity_name           = iv_entity_name
+            iv_entity_set_name       = iv_entity_set_name
+            iv_source_name           = iv_source_name
+            it_filter_select_options = it_filter_select_options
+            it_order                 = it_order
+            is_paging                = is_paging
+            it_navigation_path       = it_navigation_path
+            it_key_tab               = it_key_tab
+            iv_filter_string         = iv_filter_string
+            iv_search_string         = iv_search_string
+            io_expand                = io_expand
+            io_tech_request_context  = io_tech_request_context
+          IMPORTING
+            er_entityset             = er_entityset
+            et_expanded_clauses      = et_expanded_clauses
+            et_expanded_tech_clauses = et_expanded_tech_clauses
+            es_response_context      = es_response_context ).
+      CATCH /iwbep/cx_mgw_busi_exception ##NO_HANDLER.
+      CATCH /iwbep/cx_mgw_tech_exception ##NO_HANDLER.
+    ENDTRY.
   ENDMETHOD.
 
 
@@ -255,6 +262,8 @@ CLASS ZCL_ZTEST_USER_ODAT_01_DPC_EXT IMPLEMENTATION.
 
     DATA: ls_userset TYPE ztest_user.
 
+    CLEAR er_entity.
+
     io_data_provider->read_entry_data(
       IMPORTING
         es_data = ls_userset ).
@@ -271,7 +280,7 @@ CLASS ZCL_ZTEST_USER_ODAT_01_DPC_EXT IMPLEMENTATION.
       RAISE EXCEPTION TYPE /iwbep/cx_mgw_busi_exception
         EXPORTING
           textid  = /iwbep/cx_mgw_busi_exception=>business_error
-          message = 'Error during creation of user'.
+          message = 'Error during creation of user' ##NO_TEXT.
 
     ENDIF.
 
@@ -294,6 +303,8 @@ CLASS ZCL_ZTEST_USER_ODAT_01_DPC_EXT IMPLEMENTATION.
 * | [!CX!] /IWBEP/CX_MGW_TECH_EXCEPTION
 * +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD userset_get_entity.
+
+    CLEAR es_response_context.
 
     TRY.
         DATA(lv_uname) = CONV ztest_user-uname( it_key_tab[ name = 'UserName' ]-value ).
@@ -330,27 +341,25 @@ CLASS ZCL_ZTEST_USER_ODAT_01_DPC_EXT IMPLEMENTATION.
 * +--------------------------------------------------------------------------------------</SIGNATURE>
   METHOD userset_get_entityset.
 
+    CONSTANTS: lc_property_uname TYPE string VALUE 'UserName' ##NO_TEXT,
+               lc_property_nname TYPE string VALUE 'Nickname' ##NO_TEXT.
+
+    DATA lv_order_syntax TYPE string.
+
+    REFRESH et_entityset.
+    CLEAR es_response_context.
+
     TRY.
-        DATA(ls_selopt_uname) = it_filter_select_options[ property = 'UserName' ].
+        DATA(ls_selopt_uname) = it_filter_select_options[ property = lc_property_uname ].
       CATCH cx_sy_itab_line_not_found.
         CLEAR ls_selopt_uname.
     ENDTRY.
 
     TRY.
-        DATA(ls_selopt_zz_nickname) = it_filter_select_options[ property = 'Nickname' ].
+        DATA(ls_selopt_zz_nickname) = it_filter_select_options[ property = lc_property_nname ].
       CATCH cx_sy_itab_line_not_found.
         CLEAR ls_selopt_zz_nickname.
     ENDTRY.
-
-    " So Cool!
-    DATA(lt_order) = VALUE abap_sortorder_tab( FOR <fs_order> IN it_order (
-      name = SWITCH #( <fs_order>-property
-                WHEN 'Nickname' THEN 'ZZ_NICKNAME' )
-      descending = SWITCH #( <fs_order>-order
-                WHEN 'desc' THEN abap_true )
-    ) ).
-
-    DELETE lt_order WHERE name IS INITIAL.
 
     IF io_tech_request_context->has_count( ).
 
@@ -366,20 +375,47 @@ CLASS ZCL_ZTEST_USER_ODAT_01_DPC_EXT IMPLEMENTATION.
 
     ELSE.
 
+*      DATA(lt_order) = VALUE abap_sortorder_tab( FOR <fs_order> IN it_order (
+*        name = SWITCH #( <fs_order>-property
+*                  WHEN 'Nickname' THEN 'ZZ_NICKNAME' )
+*        descending = SWITCH #( <fs_order>-order
+*                  WHEN 'desc' THEN abap_true )
+*      ) ).
+
+      LOOP AT it_order ASSIGNING FIELD-SYMBOL(<fs_order>).
+
+        lv_order_syntax = lv_order_syntax &&
+            SWITCH string( <fs_order>-property
+                WHEN 'Nickname' THEN |, ZZ_NICKNAME| ) &&
+            SWITCH string( <fs_order>-order
+                WHEN 'desc' THEN | DESCENDING| ).
+
+      ENDLOOP.
+
+      SHIFT lv_order_syntax BY 2 PLACES LEFT.
+*      DELETE lt_order WHERE name IS INITIAL.
+
       DATA(lv_top) = CONV i( io_tech_request_context->get_top( ) ).
       DATA(lv_skip) = CONV i( io_tech_request_context->get_skip( ) ).
       DATA(lv_rows) = lv_top + lv_skip.
 
+*      SELECT *
+*      INTO TABLE @DATA(lt_entityset)
+*      FROM ztest_user
+*      UP TO @lv_rows ROWS
+*      WHERE uname IN @ls_selopt_uname-select_options AND
+*            zz_nickname IN @ls_selopt_zz_nickname-select_options.
       SELECT *
       INTO TABLE @DATA(lt_entityset)
       FROM ztest_user
       UP TO @lv_rows ROWS
       WHERE uname IN @ls_selopt_uname-select_options AND
-            zz_nickname IN @ls_selopt_zz_nickname-select_options.
+            zz_nickname IN @ls_selopt_zz_nickname-select_options
+      ORDER BY (lv_order_syntax).
 
       IF sy-subrc EQ 0.
 
-        SORT lt_entityset BY (lt_order).
+*        SORT lt_entityset BY (lt_order).
 
         IF lv_top IS NOT INITIAL OR lv_skip IS NOT INITIAL.
 
