@@ -441,6 +441,12 @@ CLASS ZCL_ZTEST_USER_ODAT_01_DPC_EXT IMPLEMENTATION.
 
       ENDIF.
 
+      IF io_tech_request_context->has_inlinecount( ) EQ abap_true.
+        es_response_context-inlinecount = lines( et_entityset ).
+      ELSE.
+        CLEAR es_response_context-inlinecount.
+      ENDIF.
+
     ENDIF.
 
   ENDMETHOD.
